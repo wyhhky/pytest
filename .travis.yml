@@ -1,0 +1,46 @@
+sudo: required
+
+services:
+  - docker
+
+env:
+  global:
+  - BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else
+    echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+#  - ISTIO_VERSION=1.1.7
+  - BUILDKIT_HOST=tcp://0.0.0.0:1234
+  - DOCKER_CLI_EXPERIMENTAL=enabled
+  - MYCLUSTER_HOST=registry.wolfio.com
+#  - MYCLUSTER_HOST_IP=172.16.32.80
+
+before_install:
+- echo "travis start"
+
+
+script:
+- echo "login docker"
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+- pwd
+- ls
+
+#- echo "docker build x86"
+#- docker build -t wyhhky/citest:latest .
+#- echo "docker push"
+#- docker push wyhhky/citest:latest
+
+#- docker manifest --help
+
+- echo "***s390x start"
+- echo "***Downloading qemu..."
+- wget https://github.com/multiarch/qemu-user-static/releases/download/v4.0.0/qemu-s390x-static.tar.gz
+- tar xvfz qemu-s390x-static.tar.gz
+
+- echo "***QEMU run..."
+- docker run --rm --privileged multiarch/qemu-user-static:register
+
+- echo "***docker build s390x"
+- docker build -f Dockerfile.s390x -t wyhhky/citest:s390x .
+- echo "***docker push s390x"
+- docker push wyhhky/citest:s390x
+
+- echo "end"

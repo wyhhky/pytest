@@ -1,2 +1,2 @@
-# pytest 
-yet another test
+# ci
+ci sample based on git+travis+dockerhub
